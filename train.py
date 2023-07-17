@@ -32,6 +32,9 @@ from conf import settings
 from utils import get_network, get_training_dataloader, get_test_dataloader, WarmUpLR, \
     most_recent_folder, most_recent_weights, last_epoch, best_acc_weights
 
+import time
+t0 = time.time()
+
 
 
 logger = logging.Logger(__name__)
@@ -49,6 +52,7 @@ def train(inputs, targets):
 
 
 def wecloud_train(epoch):
+    global accumulated_training_time
 
     start = time.time()
     net.train()
@@ -92,6 +96,9 @@ def wecloud_train(epoch):
             optimizer.param_groups[0]['lr'],        # lr
             time.time() - epoch_start_time,         # current epoch wall-clock time
         ))
+        batch_finish_time = time.time()
+        accumulated_training_time += batch_finish_time - batch_start_time
+        print("[profiling] step time: {}s, accumuated training time: {}s".format(batch_finish_time - batch_start_time, accumulated_training_time))
         if args.profiling:
             logging.info(f"PROFILING: dataset total number {len(cifar100_training_loader.dataset)}, training one batch costs {time.time() - batch_start_time} seconds")
             return
@@ -250,6 +257,9 @@ if __name__ == '__main__':
     if not os.path.exists(checkpoint_path):
         os.makedirs(checkpoint_path)
     checkpoint_path = os.path.join(checkpoint_path, '{net}-{epoch}-{type}.pth')
+    accumulated_training_time = 0
+    t1 = time.time()
+    print("[profiling] init time: {}s".format(t1-t0))
 
     for epoch in range(1, args.epoch + 1):
         if epoch > args.warm:
