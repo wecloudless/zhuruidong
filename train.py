@@ -277,6 +277,8 @@ if __name__ == '__main__':
             break
 
         acc = eval_training(epoch)
+        if not os.path.exists(checkpoint_dir.format(epoch=epoch)):
+            os.mkdir(checkpoint_dir.format(epoch=epoch))
         checkpoint_path = os.path.join(checkpoint_dir.format(epoch=epoch), 'checkpoint.pth')
 
         #start to save best performance model after learning rate decay to 0.01
