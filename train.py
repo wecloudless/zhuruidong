@@ -5,7 +5,6 @@
 
 author baiyu
 """
-
 import os
 import sys
 import argparse
@@ -205,13 +204,13 @@ if __name__ == '__main__':
     warmup_scheduler = WarmUpLR(optimizer, iter_per_epoch * args.warm)
 
     #prepare folder
-    cmd = 'mkdir -p ' + os.path.join(settings.CHECKPOINT_PATH, args.net)
+    cmd = 'mkdir -p ' + settings.CHECKPOINT_PATH
     #python 2.7 & 3
     ret = subprocess.check_output(cmd, shell=True)
 
     best_acc = 0.0
 
-    # if args.resume:
+    """# if args.resume:
     recent_folder = most_recent_folder(os.path.join(settings.CHECKPOINT_PATH, args.net), fmt=settings.DATE_FORMAT)
     if not recent_folder:
         #raise Exception('no recent folder were found')
@@ -238,7 +237,7 @@ if __name__ == '__main__':
         checkpoint_path = os.path.join(settings.CHECKPOINT_PATH, args.net, recent_folder)
 
     # else:
-    #     checkpoint_path = os.path.join(settings.CHECKPOINT_PATH, args.net, settings.TIME_NOW)
+    #     checkpoint_path = os.path.join(settings.CHECKPOINT_PATH, args.net, settings.TIME_NOW)"""
 
     #use tensorboard
     if not os.path.exists(settings.LOG_DIR):
@@ -256,7 +255,7 @@ if __name__ == '__main__':
     #create checkpoint folder to save model
     if not os.path.exists(checkpoint_path):
         os.makedirs(checkpoint_path)
-    checkpoint_path = os.path.join(checkpoint_path, '{net}-{epoch}-{type}.pth')
+    checkpoint_dir = os.path.join(checkpoint_path, '{epoch}')
     accumulated_training_time = 0
     t1 = time.time()
     print("[profiling] init time: {}s".format(t1-t0))
@@ -275,17 +274,18 @@ if __name__ == '__main__':
             break
 
         acc = eval_training(epoch)
+        checkpoint_path = os.path.join(checkpoint_dir.format(epoch=epoch), 'checkpoint.pth')
 
         #start to save best performance model after learning rate decay to 0.01
         if best_acc < acc:
-            weights_path = checkpoint_path.format(net=args.net, epoch=epoch, type='best')
+            weights_path = checkpoint_path #.format(net=args.net, epoch=epoch, type='best')
             logging.info('saving weights file to {}'.format(weights_path))
             torch.save(net.state_dict(), weights_path)
             best_acc = acc
             continue
 
         if not epoch % settings.SAVE_EPOCH:
-            weights_path = checkpoint_path.format(net=args.net, epoch=epoch, type='regular')
+            weights_path = checkpoint_path #.format(net=args.net, epoch=epoch, type='regular')
             logging.info('saving weights file to {}'.format(weights_path))
             torch.save(net.state_dict(), weights_path)
 
