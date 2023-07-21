@@ -209,6 +209,9 @@ if __name__ == '__main__':
     ret = subprocess.check_output(cmd, shell=True)
 
     best_acc = 0.0
+    checkpoint_path = settings.CHECKPOINT_PATH
+    resume_epoch = 0
+    resume_epoch = last_epoch(os.path.join(settings.CHECKPOINT_PATH))
 
     """# if args.resume:
     recent_folder = most_recent_folder(os.path.join(settings.CHECKPOINT_PATH, args.net), fmt=settings.DATE_FORMAT)
